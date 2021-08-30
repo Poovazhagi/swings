@@ -1,0 +1,253 @@
+{\rtf1\ansi\ansicpg1252\deff0\nouicompat\deflang1033{\fonttbl{\f0\fnil\fcharset0 Calibri;}}
+{\colortbl ;\red0\green0\blue0;}
+{\*\generator Riched20 10.0.17763}\viewkind4\uc1 
+\pard\fi-142\li284\sa200\sl276\slmult1\qc\cf1\b\f0\fs40\lang9 Let's create a database named "employees" in MySQL. Now, let's create an employee table using below DDL script:\par
+\b0\fs24 CREATE TABLE employee(id INT(11) AUTO_INCREMENT PRIMARY KEY,\par
+first_name VARCHAR(250) NOT NULL,\par
+last_name VARCHAR(250) NOT NULL,\par
+username VARCHAR(250) NOT NULL,\par
+PASSWORD VARCHAR(250) NOT NULL,\par
+address VARCHAR(250) NOT NULL,\par
+contact VARCHAR(250) NOT NULL);\par
+\par
+\par
+
+\pard\fi-142\li284\sa200\sl276\slmult1\qr\cf0\par
+\b\fs40 Let's create an Employee JavaBean class which we will use in JSP action tags.\par
+package net.javaguides.jsp.jdbc.bean;\par
+
+\pard\fi-142\li284\sa200\sl276\slmult1\qj\b0\fs22\par
+import java.io.Serializable;\par
+\par
+/**\par
+ * JavaBean class used in jsp action tags.\par
+ * @author Ramesh Fadatare\par
+ */\par
+public class Employee implements Serializable \{\par
+    /**\par
+     * \par
+     */\par
+    private static final long serialVersionUID = 1 L;\par
+    private String firstName;\par
+    private String lastName;\par
+    private String username;\par
+    private String password;\par
+    private String address;\par
+    private String contact;\par
+    public String getFirstName() \{\par
+        return firstName;\par
+    \}\par
+    public void setFirstName(String firstName) \{\par
+        this.firstName = firstName;\par
+    \}\par
+    public String getLastName() \{\par
+        return lastName;\par
+    \}\par
+    public void setLastName(String lastName) \{\par
+        this.lastName = lastName;\par
+    \}\par
+    public String getUsername() \{\par
+        return username;\par
+    \}\par
+    public void setUsername(String username) \{\par
+        this.username = username;\par
+    \}\par
+    public String getPassword() \{\par
+        return password;\par
+    \}\par
+    public void setPassword(String password) \{\par
+        this.password = password;\par
+    \}\par
+    public String getAddress() \{\par
+        return address;\par
+    \}\par
+    public void setAddress(String address) \{\par
+        this.address = address;\par
+    \}\par
+    public String getContact() \{\par
+        return contact;\par
+    \}\par
+    public void setContact(String contact) \{\par
+        this.contact = contact;\par
+    \}\par
+\}\par
+\par
+
+\pard\fi-142\li284\sa200\sl276\slmult1\qr\b\fs40 Let's create EmployeeDao class which contains JDBC code to connect with MySQL database. Add the following code to an EmployeeDao class:\par
+
+\pard\fi-142\li284\sa200\sl276\slmult1\qj\b0\fs22\par
+package net.javaguides.jsp.jdbc.database;\par
+\par
+import java.sql.Connection;\par
+import java.sql.DriverManager;\par
+import java.sql.PreparedStatement;\par
+import java.sql.SQLException;\par
+\par
+import net.javaguides.jsp.jdbc.bean.Employee;\par
+public class EmployeeDao \{\par
+\par
+public int registerEmployee(Employee employee) throws ClassNotFoundException\par
+\{\par
+String INSERT_USERS_SQL = "INSERT INTO employee "\par
++ "(first_name, last_name, username, password, address, contact) values "\par
++ "(?, ?, ?, ?, ?, ?);";\par
+\par
+int result = 0;\par
+\par
+Class.forName("com.mysql.jdbc.Driver");\par
+\par
+\par
+try(\par
+Connection connection = DriverManager.\par
+getConnection("jdbc:mysql://localhost:3306/java", "root", "");\par
+\par
+PreparedStatement preparedStatement = connection.prepareStatement(INSERT_USERS_SQL);\par
+)\par
+\{\par
+preparedStatement.setString(1, employee.getFirstName());\par
+preparedStatement.setString(2, employee.getLastName());\par
+preparedStatement.setString(3, employee.getUsername());\par
+preparedStatement.setString(4, employee.getPassword());\par
+preparedStatement.setString(5, employee.getAddress());\par
+preparedStatement.setString(6, employee.getContact());\par
+\par
+System.out.println(preparedStatement);\par
+\par
+result = preparedStatement.executeUpdate();\par
+\par
+\}\par
+catch(SQLException e)\par
+\{\par
+e.printStackTrace();\par
+\}\par
+return result;\par
+\}\par
+\}\par
+\b\fs40  Let's create an EmployeeServlet class to process HTTP request parameters and redirect to the appropriate JSP page after request data stored in the database:\par
+\b0\fs22\par
+package net.javaguides.employeemanagement.web;\par
+\par
+import java.io.IOException;\par
+\par
+import javax.servlet.ServletException;\par
+import javax.servlet.annotation.WebServlet;\par
+import javax.servlet.http.HttpServlet;\par
+import javax.servlet.http.HttpServletRequest;\par
+import javax.servlet.http.HttpServletResponse;\par
+\par
+import net.javaguides.employeemanagement.dao.EmployeeDao;\par
+import net.javaguides.employeemanagement.model.Employee;\par
+\par
+/**\par
+ * @email Ramesh Fadatare\par
+ */\par
+\par
+@WebServlet("/register")\par
+public class EmployeeServlet extends HttpServlet \{\par
+    private static final long serialVersionUID = 1 L;\par
+    private EmployeeDao employeeDao;\par
+\par
+    public void init() \{\par
+        employeeDao = new EmployeeDao();\par
+    \}\par
+\par
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)\par
+    throws ServletException, IOException \{\par
+\par
+        String firstName = request.getParameter("firstName");\par
+        String lastName = request.getParameter("lastName");\par
+        String username = request.getParameter("username");\par
+        String password = request.getParameter("password");\par
+        String address = request.getParameter("address");\par
+        String contact = request.getParameter("contact");\par
+\par
+        Employee employee = new Employee();\par
+        employee.setFirstName(firstName);\par
+        employee.setLastName(lastName);\par
+        employee.setUsername(username);\par
+        employee.setPassword(password);\par
+        employee.setContact(contact);\par
+        employee.setAddress(address);\par
+\par
+        try \{\par
+            employeeDao.registerEmployee(employee);\par
+        \} catch (Exception e) \{\par
+            // TODO Auto-generated catch block\par
+            e.printStackTrace();\par
+        \}\par
+\fs36\par
+\fs22         response.sendRedirect("employeedetails.jsp");\par
+    \}\par
+\}\par
+\par
+\b\fs36 Let's design employee registration HTML form with the following fields:\par
+firstName\par
+lastName\par
+username\par
+password\par
+address\par
+contact\par
+\b0\fs22 <%@ page language="java" contentType="text/html; charset=ISO-8859-1"\par
+ pageEncoding="ISO-8859-1"%>\par
+<!DOCTYPE html>\par
+<html>\par
+<head>\par
+<meta charset="ISO-8859-1">\par
+<title>Insert title here</title>\par
+</head>\par
+<body>\par
+ <div align="center">\par
+  <h1>Employee Register Form</h1>\par
+  <form action="<%= request.getContextPath() %>/register" method="post">\par
+   <table style="with: 80%">\par
+    <tr>\par
+     <td>First Name</td>\par
+     <td><input type="text" name="firstName" /></td>\par
+    </tr>\par
+    <tr>\par
+     <td>Last Name</td>\par
+     <td><input type="text" name="lastName" /></td>\par
+    </tr>\par
+    <tr>\par
+     <td>UserName</td>\par
+     <td><input type="text" name="username" /></td>\par
+    </tr>\par
+    <tr>\par
+     <td>Password</td>\par
+     <td><input type="password" name="password" /></td>\par
+    </tr>\par
+    <tr>\par
+     <td>Address</td>\par
+     <td><input type="text" name="address" /></td>\par
+    </tr>\par
+    <tr>\par
+     <td>Contact No</td>\par
+     <td><input type="text" name="contact" /></td>\par
+    </tr>\par
+   </table>\par
+   <input type="submit" value="Submit" />\par
+  </form>\par
+ </div>\par
+</body>\par
+</html>\par
+\par
+
+\pard\fi-142\li284\sa200\sl276\slmult1\qc\b\fs40 After an employee successfully registered then this page show a successful message on screen:\par
+
+\pard\fi-142\li284\sa200\sl276\slmult1\qj\b0\fs22 <%@ page language="java" contentType="text/html; charset=ISO-8859-1"\par
+ pageEncoding="ISO-8859-1"%>\par
+<%@page import="net.javaguides.employeemanagement.dao.*"%>\par
+<!DOCTYPE html>\par
+<html>\par
+<head>\par
+<meta charset="ISO-8859-1">\par
+<title>Insert title here</title>\par
+</head>\par
+<body>\par
+ <h1>User successfully registered!</h1>\par
+</body>\par
+</html>\par
+\par
+\par
+}
+ 
